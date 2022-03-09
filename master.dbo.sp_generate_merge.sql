@@ -602,6 +602,7 @@ BEGIN
 	AND c.TABLE_NAME = pk.TABLE_NAME
 	AND c.TABLE_SCHEMA = pk.TABLE_SCHEMA
 	AND c.CONSTRAINT_NAME = pk.CONSTRAINT_NAME
+	ORDER BY c.ORDINAL_POSITION
 END
 ELSE
 BEGIN
@@ -832,9 +833,9 @@ BEGIN
 END
 IF @include_rowsaffected = 1
 BEGIN
- SET @output += @b + 'OUTPUT $action INTO @mergeOutput;'
+ SET @output += @b + 'OUTPUT $action INTO @mergeOutput'
 END
-SET @output += @b 
+SET @output += ';' + @b
 
 
 --Display the number of affected rows to the user, or report if an error occurred---
