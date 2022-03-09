@@ -45,7 +45,7 @@ CREATE PROC [sp_generate_merge]
  
  -- Customisations
  @generate_updatevalues bit = 1, 
- @updatename nvarchar(max) = 'Data Service',
+ @updatename nvarchar(max) = '''Data Service''',
  @updatetime nvarchar(max) = 'sysutcdatetime()'
 )
 AS
