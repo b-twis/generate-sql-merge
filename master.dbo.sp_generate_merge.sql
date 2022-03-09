@@ -41,7 +41,12 @@ CREATE PROC [sp_generate_merge]
  @include_rowsaffected bit = 1, -- When 1, a section is added to the end of the batch which outputs rows affected by the MERGE
  @nologo bit = 0, -- When 1, the "About" comment is suppressed from output
  @batch_separator nvarchar(50) = 'GO', -- Batch separator to use. Specify NULL to output all statements within a single batch
- @output nvarchar(max) = null output -- Use this output parameter to return the generated T-SQL batches to the caller (Hint: specify @batch_separator=NULL to output all statements within a single batch)
+ @output nvarchar(max), = null output -- Use this output parameter to return the generated T-SQL batches to the caller (Hint: specify @batch_separator=NULL to output all statements within a single batch)
+ 
+ -- Customisations
+ @generate_updatevalues bit = 1, 
+ @updatename nvarchar(max) = 'Data Service',
+ @updatetime nvarchar(max) = 'sysutcdatetime()'
 )
 AS
 BEGIN
@@ -816,6 +821,9 @@ BEGIN
 	 'AND (' + @Column_List_For_Check + ') ' ELSE '' END END + 'THEN'
  SET @output += @b + ' UPDATE SET'
  SET @output += @b + '  ' + LTRIM(@Column_List_For_Update)
+ SET @output += CASE WHEN @generate_updatevalues = 1
+	 THEN ',' + @b + '  [Target].[updatename] = ' + @updatename + ',' + @b + '  [Target].[updatetime] = ' + @updatetime
+	 ELSE '' END
 END
 
 
