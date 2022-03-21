@@ -44,9 +44,10 @@ CREATE PROC [sp_generate_merge]
  @output nvarchar(max) = null output, -- Use this output parameter to return the generated T-SQL batches to the caller (Hint: specify @batch_separator=NULL to output all statements within a single batch)
  
  -- Customisations
- @generate_updatevalues bit = 1, 
+ @delete_if_not_matched_condition nvarchar(128) = null, -- additional where clause to apply to the when not matched by source
+ @generate_updatevalues bit = 1, -- Should the updatename & updatetime be created dynamically
  @updatename nvarchar(max) = '''Data Service''',
- @updatetime nvarchar(max) = 'sysutcdatetime()'
+ @updatetime nvarchar(max) = 'SYSUTCDATETIME()'
 )
 AS
 BEGIN
@@ -836,8 +837,15 @@ SET @output += @b + ' VALUES(' + REPLACE(@Column_List, '[', '[Source].[') + ')'
 --When NOT matched by source, DELETE the row as required
 IF @delete_if_not_matched=1 
 BEGIN
- SET @output += @b + 'WHEN NOT MATCHED BY SOURCE THEN '
- SET @output += @b + ' DELETE'
+	IF @delete_if_not_matched_condition is NULL
+	BEGIN
+		SET @output += @b + 'WHEN NOT MATCHED BY SOURCE THEN '
+	END
+	ELSE
+	BEGIN
+		SET @output += @b + 'WHEN NOT MATCHED BY SOURCE AND ' + @delete_if_not_matched_condition + ' THEN '
+	END
+	SET @output += @b + ' DELETE'
 END
 IF @include_rowsaffected = 1
 BEGIN
