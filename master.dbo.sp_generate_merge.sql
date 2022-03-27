@@ -44,6 +44,7 @@ CREATE PROC [sp_generate_merge]
  @output nvarchar(max) = null output, -- Use this output parameter to return the generated T-SQL batches to the caller (Hint: specify @batch_separator=NULL to output all statements within a single batch)
  
  -- Customisations
+ @update_if_matched_condition nvarchar(128) = null, -- additional where clause to apply to the when not matched by source
  @delete_if_not_matched_condition nvarchar(128) = null, -- additional where clause to apply to the when not matched by source
  @generate_updatevalues bit = 1, -- Should the updatename & updatetime be created dynamically
  @updatename nvarchar(max) = '''Data Service''',
@@ -816,6 +817,7 @@ BEGIN
 	SET @Column_List = @Column_List + ',[' + @hash_compare_column + ']'
  END
  SET @output += @b + 'WHEN MATCHED ' + 
+ 	 CASE WHEN isnull(@update_if_matched_condition,'')  = '' then '' else 'AND ' + @update_if_matched_condition + ' ' END +
 	 CASE WHEN @update_only_if_changed = 1 AND @hash_compare_column IS NOT NULL
 	 THEN 'AND ([Target].[' + @hash_compare_column +'] <> [Source].[' + @hash_compare_column +'] OR [Target].[' + @hash_compare_column + '] IS NULL) ' 
 	 ELSE CASE WHEN @update_only_if_changed = 1 AND @hash_compare_column IS NULL THEN
